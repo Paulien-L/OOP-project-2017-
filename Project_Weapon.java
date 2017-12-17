@@ -1,76 +1,130 @@
-package Items;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class Weapon {
-	
+public class Weapon extends Item {
+
 	//CONSTRUCTOR
-	public Weapon(double weight) throws IllegalArgumentException {
-		if(isValidWeight(weight) == true )
+	public Weapon(double value, float weight, int damage, Monster holder) throws IllegalArgumentException {
+		super(getID(), value, holder);
+
+		if(isValidWeight(weight))
 			this.weight = weight;
 		else
 			throw new IllegalArgumentException();
+
+		assert(isValidDamage(damage));
+		this.damage = damage;
 	}
-	
+
+
 	//IDENTIFACATION (total)
-	private long weaponID;
-	private List<Long> weapons =  new ArrayList<Long>();
-	
-	public long getWeaponID() {
-		return this.weaponID;
-	}
-	
-	public void setWeaponID() {
+	private static List<Long> weaponIDs =  new ArrayList<Long>();
+
+	private long generateWeaponID() {
 		Random r = new Random();
 		long range = Long.MAX_VALUE;
-		final long weaponID = (long) (r.nextDouble()*range);
-		if(isUniqueWeaponId(weaponID) == true)
+		long weaponID = (long) (r.nextDouble()*range);
+
+		if(isValidID(weaponID) == true) {
 			if((weaponID >= 0) && (weaponID%2 != 0)) {
-				this.weaponID = weaponID;
-				weapons.add(this.weaponID);
-			} else if(weaponID < 0) {
-				this.weaponID = Math.abs(weaponID);
-				weapons.add(this.weaponID);
+				weaponIDs.add(weaponID);
+				return weaponID;
+			} else if((weaponID < 0) && (weaponID%2 != 0)) {
+				weaponIDs.add(weaponID);
+				return weaponID = Math.abs(weaponID);
 			} else {
-				this.weaponID = Math.abs(weaponID + 1);
-				weapons.add(this.weaponID);
+				weaponIDs.add(weaponID);
+				return weaponID = Math.abs(weaponID + 1);
 			}
-		else
-			setWeaponID();
+		} else {
+			return weaponID = generateWeaponID();
+		}
 	}
 	
-	public boolean isUniqueWeaponId(long weaponID) {
-		if(! weapons.contains(weaponID))
+	@Override
+	public boolean isValidID(long weaponID) {
+		if(! weaponIDs.contains(weaponID))
 			return true;
 		else
 			return false;				
 	}
-	
+
 	//WEIGHT (defensive)
-	private final double weight;
-	
-	public double getWeight() {
-		return this.weight; //Do some formatting here?
+	private final float weight;
+
+	//@Basic
+	public float getWeight() {
+		return this.weight;
 	}
-	
-	//https://stackoverflow.com/questions/2808535/round-a-double-to-2-decimal-places
-	public boolean isValidWeight(double weight) {
-		if(BigDecimal.valueOf(weight).scale() < 2)
-			if(weight > 0)
-				return true;
-			else 
-				return false;
+
+	public boolean isValidWeight(float weight) throws IllegalArgumentException {
+		if(weight > 0)
+			return true;
+		else
+			throw new IllegalArgumentException();
+	}
+
+
+	//VALUE (nominal)
+	public void increaseWeaponValue() {
+	}
+
+	public void decreaseWeaponValue() {
+	}
+
+	//DAMAGE (nominal)
+
+	private int damage;
+	private static int maxDamage = 20;
+	private final static int minDamage = 1;
+
+	//@Basic
+	public int getDamage() {
+		return this.damage;
+	}
+
+	public boolean isValidDamage(int damage) {
+		if((damage >= minDamage) && (damage <= getMaxDamage()))
+			return true;
 		else
 			return false;
 	}
-	
-	public static void main(String[] args) {
-		Weapon balrog = new Weapon(200);
-		balrog.setWeaponID();
-		System.out.println(balrog.getWeaponID());
+
+	public int getMaxDamage() {
+		return this.maxDamage;
 	}
+
+	private boolean isValidMaxDamage(int newMaxDamage) {
+		if(newMaxDamage >= minDamage)
+			return true;
+		else
+			return false;
+	}
+
+	private void setMaxDamage(int newMaxDamage) {
+		assert(isValidMaxDamage(newMaxDamage));
+		this.maxDamage = newMaxDamage;
+	}
+
+	private void generateNewMaxDamage() {
+		Random r = new Random();
+		int newMaxDamage = r.nextInt((Integer.MAX_VALUE - minDamage) + 1) + minDamage;
+		assert(isValidMaxDamage(newMaxDamage));
+		this.maxDamage = newMaxDamage;
+	}
+
+	//HOLDER (defenisive)
+	@Override
+	public boolean isValidHolder(Monster holder) {
+		if(holder == null)
+			return true;
+		else if((holder.getNbOfAnchors() >= holder.getNbWeapons()) && (hasHolder(this) == false))
+			return true;
+		else
+			return false;
+	}
+
+
+
 }
