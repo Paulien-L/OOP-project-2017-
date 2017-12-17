@@ -42,21 +42,25 @@ public class Monster {
      * @param 	maxHitpoints
      * 			The maximum hitpoints of the monster.
      * @param 	strength
-     * 			The strength of a the monster.
+     * 			The strength of the monster.
+     * @param   nbOfAnchors
+     *          The number of anchors of the monster
      *
      * @pre		The given protection factor for the monster must be a valid protection factor.
      * 			| isValidProtection(protection)
      *
      * @post	The name of this new monster is equal to the given name.
-     * 			| new.getName() == name
+     * 			| new.getName() = name
      * @post    The damage of this new monster is equal to the given damage.
-     *          new.getDamage() == damage
+     *          new.getDamage() = damage
      * @post	The protection factor of this new monster is equal to the given protection factor.
-     * 			| new.getProtection() == protection
+     * 			| new.getProtection() = protection
      * @post	The maximum hitpoints of this new monster is equal to the given maximum hitpoints.
-     * 			| new.getMaxHitpoints() == maxHitpoints
+     * 			| new.getMaxHitpoints() = maxHitpoints
      * @post	The strength of this new monster is equal to the given strength.
-     * 			| new.getStrength() == strength
+     * 			| new.getStrength() = strength
+     * @post    The number of anchors of this new monster is equal to the given number of anchors.
+     *          | new.getNbOfAnchors = nbOfAnchors
      *
      * @throws IllegalArgumentException
      * 			Throws exception if the given name is not a valid name.
@@ -64,8 +68,11 @@ public class Monster {
      * @throws IllegalArgumentException
      * 			Throws exception if the given maximum hitpoints isn't a valid value for maximum hitpoints.
      * 			| ! isValidMaxHitpoints(maxHitpoints)
+     * @throws IllegalArgumentException
+     *          Throws exception if the given number of anchors isn't a valid number of anchors.
+     *          | ! isValidNbOfAnchors(nbOfAnchors)
      */
-    public Monster(String name, int damage, int protection, int maxHitpoints, int strength) throws IllegalArgumentException {
+    public Monster(String name, int damage, int protection, int maxHitpoints, int strength, int nbOfAnchors) throws IllegalArgumentException {
         if(isValidName(name)) {
             this.name = name;
         } else {
@@ -83,6 +90,11 @@ public class Monster {
         this.hitpoints = this.maxHitpoints;
 
         this.strength = strength;
+        
+        if(isValidNbOfAnchors(nbOfAnchors))
+	        	this.nbOfAnchors = nbOfAnchors;
+	        else
+	        	throw new IllegalArgumentException();
     }
 
     //NAME
@@ -393,7 +405,12 @@ public class Monster {
     public static boolean isValidAverageStrength(float average){
         return average == 10;
     }
-
+    
+    public float getCarryingCapacity() {
+	    	return this.carryingCapacity = 1200*this.getStrength();
+	    }
+    
+    //HITTING
     /**
      * A method to hit another monster
      * @param DefendingMonster
@@ -414,11 +431,73 @@ public class Monster {
             } catch (IllegalArgumentException e){
                 DefendingMonster.setHitpoints(0);
             }
-
         }
-
+    }
+    
+    //ANCHOR
+    private static int maxNbOfAnchors = 2;
+    private int nbOfAnchors;
+		
+    public int getNbOfAnchors() {
+        return this.nbOfAnchors;
     }
 
+    public boolean isValidNbOfAnchors(int nbOfAnchors) {
+        if(nbOfAnchors <= getMaxNbOfAnchors())
+            return true;
+        else
+            return false;
+    }
+
+    public int getMaxNbOfAnchors() {
+        return this.maxNbOfAnchors;
+    }
+
+	private void setMaxNbOFAnchors(int maxNbOfAnchors) throws IllegalArgumentException {
+        if(isValidNbOfMaxAnchors(maxNbOfAnchors) == true)
+            this.maxNbOfAnchors = maxNbOfAnchors;
+        else
+            throw new IllegalArgumentException();
+    }
+
+    private boolean isValidNbOfMaxAnchors(int maxNbOfAnchors) {
+        return (maxNbOfAnchors >= 0)
+    }
+		
+    //WEAPONS
+    private List<Weapon> weapons = new ArrayList<Weapon>();
+	    
+    public int getNbWeapons() {
+        return weapons.size();
+    }
+
+    public boolean canHaveAsWeapon(Weapon weapon) {
+        if((weapon != null) && (weapon.isValidHolder(this) == true))
+            return true;
+        else
+            return false;
+    }
+
+    public void obtainWeapon(Weapon weapon) throws IllegalArgumentException{
+        if(canHaveAsWeapon(weapon) == true) {
+            weapons.add(weapon);
+            weapon.setHolder(this);
+        } else
+            throw new IllegalArgumentException();
+    }
+
+    public void destroyWeapon(Weapon weapon) throws IllegalArgumentException {
+        if(weapons.contains(weapon) == true) {
+            weapons.remove(weapon);
+            weapon.setHolder(null);
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+	    
+    //PURSE
+    private Item purse;
+    
     /**
      *
      * @param args
