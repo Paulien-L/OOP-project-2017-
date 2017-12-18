@@ -15,6 +15,13 @@ public class Weapon extends Item {
 
 		assert(isValidDamage(damage));
 		this.damage = damage;
+		
+		if((isValidHolder(holder) == true) && (holder.canHaveAsWeapon(this) == true)) {
+			setHolder(holder);
+			holder.obtainWeapon(this);
+		} else {
+			throw new IllegalArgumentException();
+		}
 	}
 
 
@@ -120,6 +127,8 @@ public class Weapon extends Item {
 		if(holder == null)
 			return true;
 		else if((holder.getNbOfAnchors() >= holder.getNbWeapons()) && (hasHolder(this) == false))
+			return true;
+		else if((holder.getNbOfAnchors() >= holder.getNbWeapons()) && (hasHolder(this) == hasAsHolder(holder)))
 			return true;
 		else
 			return false;
