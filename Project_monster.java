@@ -92,9 +92,9 @@ public class Monster {
         this.strength = strength;
         
         if(isValidNbOfAnchors(nbOfAnchors))
-	        	this.nbOfAnchors = nbOfAnchors;
-	        else
-	        	throw new IllegalArgumentException();
+			this.nbOfAnchors = nbOfAnchors;
+		else
+			throw new IllegalArgumentException();
     }
 
     //NAME
@@ -311,7 +311,9 @@ public class Monster {
      * Sets the hitpoints of a monster to a new value.
      *
      * @param newHitpoints
-     *
+ 	 * @post 	If the given maximum hitpoins are valid, then the maximum hitpoints of a monster equal the given value.
+	 * 			| if(isValidMaxHitpoints(newMaxHitpoints))
+	 * 			|	then this.maxHitpoints = new.newMaxHitpoints
      * @throws IllegalArgumentException
      * 			The new value for hitpoints is not a valid value.
      * 			| isValidHitpoints(newHitpoints) == false
@@ -406,8 +408,13 @@ public class Monster {
         return average == 10;
     }
     
+	/**
+	 * Method that calculates the carrying capacity of a monster based on its strength
+	 * @return The carrying capacity of a monster expressed as 12kg times the strength of the monster.
+	 * 			| carryingCapacity = 12000*monster.getStrength()
+	 */
     public float getCarryingCapacity() {
-	    	return this.carryingCapacity = 1200*this.getStrength();
+	    	return this.carryingCapacity = 12000*this.getStrength();
 	    }
     
     //HITTING
@@ -435,49 +442,126 @@ public class Monster {
     }
     
     //ANCHOR
-    private static int maxNbOfAnchors = 2;
-    private int nbOfAnchors;
-		
+    /**
+	 * Variable that represents the number of anchors a monster has.
+	 */
+	private int nbOfAnchors;
+	/**
+	 * Variable that represents the maximum number of anchors.
+	 */
+	private static int maxNbOfAnchors = 2;
+    
+	/**
+	 * Method that returns the number of anchors a monster possesses.
+	 * @return Number of anchors of a monster
+	 * 			|nbOfAnchors
+	 */	
     public int getNbOfAnchors() {
         return this.nbOfAnchors;
     }
-
+	/**
+	 * Method to check if a given number of anchors is valid.
+	 * @param 	nbOfAnchors
+	 * @return 	True if the given number of anchors is lower than the maximum number of anchors.
+	 * 			| nbOfAnchors <= getMaxNbOfAnchors()
+	 */
     public boolean isValidNbOfAnchors(int nbOfAnchors) {
-        if(nbOfAnchors <= getMaxNbOfAnchors())
-            return true;
-        else
-            return false;
+        return (nbOfAnchors <= getMaxNbOfAnchors());
     }
-
+	
+	/**
+	 * Returns the maximum number of anchors monsters can have.
+	 * @return	Maximum number of anchors
+	 * 			|maxNbOfAnchors
+	 */
     public int getMaxNbOfAnchors() {
         return this.maxNbOfAnchors;
     }
-
+	
+	/**
+	 * Sets the maximum number of anchors to a new value.
+	 * @param 	maxNbOfAnchors
+	 * @post	The maximum number of anchors will be equal to the new value
+	 * 			| maxNbOfAnchors = new.maxNbOfAnchors
+	 * @throws 	IllegalArgumentException
+	 * 			The new maximumNbOfAnchors is not a valid number of anchors.
+	 * 			isValidNbOfMaxAnchors(maxNbOfAnchors) == false
+	 * @note	Not used in the current game.
+	 */
 	private void setMaxNbOFAnchors(int maxNbOfAnchors) throws IllegalArgumentException {
         if(isValidNbOfMaxAnchors(maxNbOfAnchors) == true)
             this.maxNbOfAnchors = maxNbOfAnchors;
         else
             throw new IllegalArgumentException();
     }
-
+	
+	/**
+	 * Checks if the given number of maximum anchors is valid.
+	 * @param maxNbOfAnchors
+	 * @return	True if the maximum number of anchors is greater or equal to zero.
+	 * 			|(maxNbOfAnchors >= 0)
+	 * @note	Not used in the current game.
+	 */
     private boolean isValidNbOfMaxAnchors(int maxNbOfAnchors) {
         return (maxNbOfAnchors >= 0)
     }
 		
     //WEAPONS
+    /**
+	 * List of weapons a monster is carrying.
+	 */
     private List<Weapon> weapons = new ArrayList<Weapon>();
-	    
+	
+	/**
+	* Total weight of the weapons a monster is carrying.
+	*/
+	private float totalWeight;
+	
+	/**
+	 * Method to get the number of weapons a monster is carrying
+	 * @return 	The number of weapons a monster is carrying
+	 * 			| weapons.size()
+	 */
     public int getNbWeapons() {
         return weapons.size();
     }
-
-    public boolean canHaveAsWeapon(Weapon weapon) {
-        if((weapon != null) && (weapon.isValidHolder(this) == true))
-            return true;
-        else
-            return false;
-    }
-
+	/**
+	 * Method to calculate the total weight of the weapons a monster is carrying
+	 * @return 	The total weight of the weapons a monster is carrying
+	 * 			| totalWeight
+	 */
+	public float getTotalWeight() {
+		for (Weapon weapon: weapons) {
+			totalWeight += weapon.getWeight();
+		}
+		return totalWeight;
+	}
+	
+    /**
+	 * Method to check if a monster can obtain a certain weapon
+	 * @param weapon
+	 * @return 	True if the weapon exists, the monster is a valid holder of the weapon 
+	 * 			and the monster has enough carrying capacity to carry the weapon.
+	 * 			| if((weapon != null) && (weapon.isValidHolder(this) == true) 
+	 * 			| && ((this.getCarryingCapacity() - this.getTotalWeight()) >= weapon.getWeight()))
+	 * 			|	then result == true
+	 */
+	public boolean canHaveAsWeapon(Weapon weapon) {
+		return ((weapon != null) && (weapon.isValidHolder(this) == true) && ((this.getCarryingCapacity() - this.getTotalWeight()) >= weapon.getWeight()));
+	}
+	
+	/**
+	 * Method for a monster to obtain a weapon.
+  	 * @param 	weapon
+	 * @post	If the monster can have the given weapon as a weapon, the weapon will be added to the list of weapons a monster is carrying
+	 * 			and the holder of the weapon will be set to this monster.
+	 * 			| if(canHaveAsWeapon(weapon) == true)
+	 * 			|	then weapons.add(weapon)
+	 * 			|	and weapon.setHolder(this)
+	 * @throws 	IllegalArgumentException
+	 * 			The monster cannot have the given weapon as a weapon.
+	 * 			canHaveAsWeapon(weapon) == false
+	 */
     public void obtainWeapon(Weapon weapon) throws IllegalArgumentException{
         if(canHaveAsWeapon(weapon) == true) {
             weapons.add(weapon);
@@ -485,7 +569,17 @@ public class Monster {
         } else
             throw new IllegalArgumentException();
     }
-
+	
+	/**
+	 * Method to destroy a weapon the monster is carrying.
+	 * @param 	weapon
+	 * @post	If the weapon is carried by the monster, it will be removed from the list of weapons the monster is carrying
+	 * 			and the holder of the weapon will be set to null.
+	 * 			| if weapons.contains(weapon)
+	 * 			| 	then weapons.remove(weapon)
+	 * 			|	and weapon.setHolder(null)
+	 * @throws 	IllegalArgumentException
+	 */
     public void destroyWeapon(Weapon weapon) throws IllegalArgumentException {
         if(weapons.contains(weapon) == true) {
             weapons.remove(weapon);
@@ -499,7 +593,6 @@ public class Monster {
     private Item purse;
     
     /**
-     *
      * @param args
      * @throws IllegalArgumentException
      *         If the average strength is not equal to 10
