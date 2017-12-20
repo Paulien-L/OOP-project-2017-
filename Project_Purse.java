@@ -1,8 +1,17 @@
+package Items;
+
+import Monsters.Monster;
+
 public class Purse extends Item {
 
-    public Purse(long ID, double value, int capacity)throws IllegalArgumentException{
-        super(ID, value);
+    public Purse(long ID, double value, int capacity, int dukats)throws IllegalArgumentException{
+        if(!isValidID(ID))
+            throw new IllegalArgumentException();
+        else
+            this.setID(ID);
+        this.setValue(value);
         this.setCapacity(capacity);
+        this.setDukats(dukats);
     }
 
     public boolean isValidID(long PurseId){
@@ -23,7 +32,7 @@ public class Purse extends Item {
                 return false;
         }
     }
-    public double getPurseValue(){
+    public double getPurseTotalValue(){
         return (this.getValue()+this.dukats);
     }
     private int dukats;
@@ -42,9 +51,20 @@ public class Purse extends Item {
     private void addDukats(int numberToAdd){
         setDukats(this.getDukats() + numberToAdd);
     }
-   // error when there are insufficient dukats?
+
     private void removeDukats(int numberToDistract){
-        setDukats(this.getDukats() - numberToDistract);
+        if (numberToDistract <= this.dukats)
+            setDukats(this.getDukats() - numberToDistract);
+        else
+            System.out.println("Insufficient dukats to remove");
+    }
+
+    public void transferDukats(Purse otherpurse, int numberToTransfer){
+        if (numberToTransfer <= this.dukats) {
+            this.removeDukats(numberToTransfer);
+            otherpurse.addDukats(numberToTransfer);
+        } else
+            System.out.println("Insufficient dukats to transfer, transfer cancelled");
     }
 
     private int capacity;
@@ -65,11 +85,10 @@ public class Purse extends Item {
         this.setDukats(0);
     }
 
-	@Override
-	public boolean isValidHolder(Monster holder) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-
+    public boolean isValidHolder(Monster monster){
+        if (monster.getPurse() == null)
+            return true;
+        else
+            return false;
+    }
 }
