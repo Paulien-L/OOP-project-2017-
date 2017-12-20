@@ -6,17 +6,12 @@ public class Weapon extends Item {
 
 	//CONSTRUCTOR
 	public Weapon(double value, float weight, int damage, Monster holder) throws IllegalArgumentException {
-		super(getID(), value, holder);
-
-		if(isValidWeight(weight))
-			this.weight = weight;
-		else
-			throw new IllegalArgumentException();
+		super(generateWeaponID(), weight, value, holder);
 
 		assert(isValidDamage(damage));
 		this.damage = damage;
 		
-		if((isValidHolder(holder) == true) && (holder.canHaveAsWeapon(this) == true)) {
+		if((isValidHolder(holder) == true) && (holder.canPickUp(this) == true)) {
 			setHolder(holder);
 			holder.obtainWeapon(this);
 		} else {
@@ -28,12 +23,12 @@ public class Weapon extends Item {
 	//IDENTIFACATION (total)
 	private static List<Long> weaponIDs =  new ArrayList<Long>();
 
-	private long generateWeaponID() {
+	private static long generateWeaponID() {
 		Random r = new Random();
 		long range = Long.MAX_VALUE;
 		long weaponID = (long) (r.nextDouble()*range);
 
-		if(isValidID(weaponID) == true) {
+		if(! weaponIDs.contains(weaponID)) {
 			if((weaponID >= 0) && (weaponID%2 != 0)) {
 				weaponIDs.add(weaponID);
 				return weaponID;
@@ -49,28 +44,9 @@ public class Weapon extends Item {
 		}
 	}
 	
-	@Override
-	public boolean isValidID(long weaponID) {
-		if(! weaponIDs.contains(weaponID))
-			return true;
-		else
-			return false;				
-	}
 
 	//WEIGHT (defensive)
-	private final float weight;
-
-	//@Basic
-	public float getWeight() {
-		return this.weight;
-	}
-
-	public boolean isValidWeight(float weight) throws IllegalArgumentException {
-		if(weight > 0)
-			return true;
-		else
-			throw new IllegalArgumentException();
-	}
+	
 
 
 	//VALUE (nominal)
@@ -126,9 +102,9 @@ public class Weapon extends Item {
 	public boolean isValidHolder(Monster holder) {
 		if(holder == null)
 			return true;
-		else if((holder.getNbOfAnchors() >= holder.getNbWeapons()) && (hasHolder(this) == false))
+		else if((holder.getNbFreeAnchors() > 0) && (hasHolder(this) == false))
 			return true;
-		else if((holder.getNbOfAnchors() >= holder.getNbWeapons()) && (hasHolder(this) == hasAsHolder(holder)))
+		else if((holder.getNbFreeAnchors() > 0) && (hasHolder(this) == hasAsHolder(holder)))
 			return true;
 		else
 			return false;
