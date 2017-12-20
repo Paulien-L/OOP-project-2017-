@@ -98,9 +98,16 @@ public class Monster {
         
         if(isValidNbOfAnchors(nbOfAnchors)) {
 			this.nbAnchors = nbOfAnchors;
+			
 			equipment.add(weapon);
+			this.leftAnchor = weapon;
+			
 			equipment.add(purse);
+			this.rightAnchor = purse;
+			
 			equipment.add(backpack);
+			this.backAnchor = backpack;
+			
         } else
 			throw new IllegalArgumentException();
     }
@@ -456,6 +463,9 @@ public class Monster {
 	private static int maxNbOfAnchors;
 	private final static int minNbOfAnchors = 3;
 	private List<Item> equipment = new ArrayList<Item>();
+	private Item leftAnchor;
+	private Item rightAnchor;
+	private Item backAnchor;
 	
 	/**
 	 * Method that returns the number of anchors a monster possesses.
@@ -474,15 +484,32 @@ public class Monster {
     	return (this.getNbAnchors() - this.getNbEquipedItems());
     }
     
+    public Backpack getBackpack() {
+    	for(Item equipment: equipment) {
+    		if(equipment instanceof Backpack)
+    			//Something something
+    	}
+    	return //Something
+    }
+    
     public boolean canEquip(Item item) {
     	return ((Backpack.getContents().contains(item)) && (this.getNbFreeAnchors() > 0));
     }
     
-    public void equip(Item item) {
-    	if(canEquip(item) == true)
+    public void equip(Item item) throws IllegalArgumentException {
+    	if(canEquip(item) == true) {
     		Backpack.getContents().remove(item);
     		equipment.add(item);
-    	
+    	} else
+    		throw new IllegalArgumentException();
+    }
+    
+    public void unequip(Item item) throws IllegalArgumentException {
+    	if(equipment.contains(item) == true) {
+    		equipment.remove(item);
+    		Backpack.getContents().add(item);
+    	} else
+    		throw new IllegalArgumentException();
     }
     
     /**
@@ -559,25 +586,25 @@ public class Monster {
 	 * 			|	then result == true
 	 */
 	public boolean canPickUp(Item item) {
-		return ((item != null) && (item.isValidHolder(this) == true) && ((this.getCarryingCapacity() - this.getEquipmentLoad()) >= item.getWeight()));
+		return ((item != null) && (item.isValidHolder(this) == true) && ((this.getCarryingCapacity() - (this.getEquipmentLoad() + ((Backpack) Backpack.getContents()).getContentWeight())) >= item.getWeight()));
 	}
 	
 	/**
-	 * Method for a monster to obtain a weapon.
-  	 * @param 	weapon
-	 * @post	If the monster can have the given weapon as a weapon, the weapon will be added to the list of weapons a monster is carrying
-	 * 			and the holder of the weapon will be set to this monster.
-	 * 			| if(canHaveAsWeapon(weapon) == true)
-	 * 			|	then weapons.add(weapon)
-	 * 			|	and weapon.setHolder(this)
+	 * Method for a monster to obtain an item.
+  	 * @param 	item
+	 * @post	If the monster can pick up the given item, the item will be added to the contents of the backpack of a monster
+	 * 			and the holder of the item will be set to this monster.
+	 * 			| if(canPickUp(item) == true)
+	 * 			|	then contents.add(item)
+	 * 			|	and item.setHolder(this)
 	 * @throws 	IllegalArgumentException
-	 * 			The monster cannot have the given weapon as a weapon.
-	 * 			canHaveAsWeapon(weapon) == false
+	 * 			The monster cannot pick up the given item.
+	 * 			canPickUp(item) == false
 	 */
-    public void obtainWeapon(Weapon weapon) throws IllegalArgumentException {
-        if(canPickUp(weapon) == true) {
-            Backpack.getContents().add(weapon);
-            weapon.setHolder(this);
+    public void obtainItem(Item item) throws IllegalArgumentException {
+        if(canPickUp(item) == true) {
+            Backpack.getContents().add(item);
+            item.setHolder(this);
         } else
             throw new IllegalArgumentException();
     }
