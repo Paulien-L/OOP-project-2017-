@@ -61,6 +61,10 @@ public abstract class Item {
 		else
 			return false;
 	}
+	
+	public boolean hasAsHolder(Monster monster) {
+		return (this.getHolder() == monster);
+	}
 
 	public abstract boolean isValidHolder(Monster holder);
 	
