@@ -2,9 +2,14 @@
 public abstract class Item {
 	
 	//CONSTRUCTOR
-	public Item(long ID, double value, Monster holder) throws IllegalArgumentException {
+	public Item(long ID, float weight, double value, Monster holder) throws IllegalArgumentException {
 		this.ID = ID;
-			
+		
+		if(isValidWeight(weight) == true)
+			this.weight = weight;
+		else
+			throw new IllegalArgumentException();
+		
 		assert(isValidValue(value));
 		this.value = value;
 		
@@ -15,13 +20,11 @@ public abstract class Item {
 	}
 	
 	//IDENTIFICATION
-	private static long ID;
+	private final long ID;
 
-	public static long getID() {
-		return ID;
+	public long getID() {
+		return this.ID;
 	}
-
-	public abstract boolean isValidID(long ID);
 
 	//VALUE
 	private double value;
@@ -41,6 +44,18 @@ public abstract class Item {
 	    	this.value = 0;
 	}
 	
+	//WEIGHT
+	private final float weight;
+
+	//@Basic
+	public float getWeight() {
+		return this.weight;
+	}
+
+	public boolean isValidWeight(float weight) {
+		return (weight >= 0);
+	}
+	
 	//HOLDER
 	private Monster holder;
 		
@@ -56,16 +71,13 @@ public abstract class Item {
 	}
 
 	public boolean hasHolder(Item item) {
-		if(item.getHolder() != null)
-			return true;
-		else
-			return false;
+		return (item.getHolder() != null);
 	}
 	
 	public boolean hasAsHolder(Monster monster) {
 		return (this.getHolder() == monster);
 	}
-
+	
 	public abstract boolean isValidHolder(Monster holder);
 	
 }
