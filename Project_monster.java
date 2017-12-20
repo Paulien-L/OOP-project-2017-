@@ -408,6 +408,7 @@ public class Monster {
         return average == 10;
     }
     
+   private float carryingCapacity;
 	/**
 	 * Method that calculates the carrying capacity of a monster based on its strength
 	 * @return The carrying capacity of a monster expressed as 12kg times the strength of the monster.
