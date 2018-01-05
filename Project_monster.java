@@ -4,8 +4,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import be.kuleuven.cs.som.annotate.*;
 
-import static java.lang.Math.random;
-
 /**
  * A class of monsters involving a monster's name, damage, protection factor, hitpoints, and strength.
  * Plus a method for combat between two monsters.
@@ -56,8 +54,6 @@ public class Monster {
      *
      * @post	The name of this new monster is equal to the given name.
      * 			| new.getName() = name
-     * @post    The damage of this new monster is equal to the given damage.
-     *          new.getDamage() = damage
      * @post	The protection factor of this new monster is equal to the given protection factor.
      * 			| new.getProtection() = protection
      * @post	The maximum hitpoints of this new monster is equal to the given maximum hitpoints.
@@ -66,6 +62,9 @@ public class Monster {
      * 			| new.getStrength() = strength
      * @post    The number of anchors of this new monster is equal to the given number of anchors.
      *          | new.getNbOfAnchors = nbOfAnchors
+     *
+     * @effect	The damage of the monster is set as in the method setDamage(int damage)
+     * 			| new(setDamage(damage))
      *
      * @throws IllegalArgumentException
      * 			Throws exception if the given name is not a valid name.
@@ -83,6 +82,7 @@ public class Monster {
         } else {
             throw new IllegalArgumentException(name);
         }
+        
         this.setDamage(damage);
 
         assert isValidProtection(protection);
@@ -98,15 +98,9 @@ public class Monster {
         
         if(isValidNbOfAnchors(nbOfAnchors)) {
 			this.nbAnchors = nbOfAnchors;
-			
 			equipment.add(weapon);
-			this.leftAnchor = weapon;
-			
 			equipment.add(purse);
-			this.rightAnchor = purse;
-			
 			equipment.add(backpack);
-			this.backAnchor = backpack;
 			
         } else
 			throw new IllegalArgumentException();
@@ -132,7 +126,7 @@ public class Monster {
      * 		   | 	then isValidName = true
      */
     public boolean isValidName(String name){
-        return name.matches("([A-Z][a-zA-Z0-9 ']+)");
+        return ((name != null) && (name.matches("([A-Z][a-zA-Z0-9 ']+)")));
     }
 
     //DAMAGE
@@ -463,9 +457,6 @@ public class Monster {
 	private static int maxNbOfAnchors;
 	private final static int minNbOfAnchors = 3;
 	private List<Item> equipment = new ArrayList<Item>();
-	private Item leftAnchor;
-	private Item rightAnchor;
-	private Item backAnchor;
 	
 	/**
 	 * Method that returns the number of anchors a monster possesses.
@@ -482,34 +473,6 @@ public class Monster {
     
     public int getNbFreeAnchors() {
     	return (this.getNbAnchors() - this.getNbEquipedItems());
-    }
-    
-    public Backpack getBackpack() {
-    	for(Item equipment: equipment) {
-    		if(equipment instanceof Backpack)
-    			//Something something
-    	}
-    	return //Something
-    }
-    
-    public boolean canEquip(Item item) {
-    	return ((Backpack.getContents().contains(item)) && (this.getNbFreeAnchors() > 0));
-    }
-    
-    public void equip(Item item) throws IllegalArgumentException {
-    	if(canEquip(item) == true) {
-    		Backpack.getContents().remove(item);
-    		equipment.add(item);
-    	} else
-    		throw new IllegalArgumentException();
-    }
-    
-    public void unequip(Item item) throws IllegalArgumentException {
-    	if(equipment.contains(item) == true) {
-    		equipment.remove(item);
-    		Backpack.getContents().add(item);
-    	} else
-    		throw new IllegalArgumentException();
     }
     
     /**
@@ -558,7 +521,34 @@ public class Monster {
     private boolean isValidNbOfMaxAnchors(int maxNbOfAnchors) {
         return (maxNbOfAnchors >= 0);
     }
-			
+	
+    //EQUIPMENT
+    public boolean hasAsEquipment(Item item) {
+    	return (this.equipment.contains(item));
+    }
+    
+    public boolean canEquip(Item item) {
+    	return ((item.getHolder() == null) && (this.getNbFreeAnchors() > 0));
+    }
+    
+    //This doesn't work exactly
+    public void equip(Item item) throws IllegalArgumentException {
+    	if(canEquip(item) == true) {
+    		equipment.add(item);
+    		item.setHolder(this);
+    	}
+    	else
+    		throw new IllegalArgumentException();
+    }
+    
+    public void unequip(Item item) throws IllegalArgumentException {
+    	if(equipment.contains(item) == true) {
+    		equipment.remove(item);
+    		Backpack.getContents().add(item);
+    	} else
+    		throw new IllegalArgumentException();
+    }
+    
 	/**
 	* Total weight of the weapons a monster is carrying.
 	*/
@@ -585,7 +575,7 @@ public class Monster {
 	 * 			| && ((this.getCarryingCapacity() - this.getTotalWeight()) >= weapon.getWeight()))
 	 * 			|	then result == true
 	 */
-	public boolean canPickUp(Item item) {
+	public boolean canObtain(Item item) {
 		return ((item != null) && (item.isValidHolder(this) == true) && ((this.getCarryingCapacity() - (this.getEquipmentLoad() + ((Backpack) Backpack.getContents()).getContentWeight())) >= item.getWeight()));
 	}
 	
@@ -602,7 +592,7 @@ public class Monster {
 	 * 			canPickUp(item) == false
 	 */
     public void obtainItem(Item item) throws IllegalArgumentException {
-        if(canPickUp(item) == true) {
+        if(canObtain(item) == true) {
             Backpack.getContents().add(item);
             item.setHolder(this);
         } else
