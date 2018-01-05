@@ -64,8 +64,10 @@ public abstract class Item {
 	}
 
 	public void setHolder(Monster holder) throws IllegalArgumentException {
-		if(isValidHolder(holder) == true)
+		if(isValidHolder(holder) == true) 
 			this.holder = holder;
+		if(! holder.hasAsEquipment(this))
+			holder.equip(this);
 		else
 			throw new IllegalArgumentException();
 	}
