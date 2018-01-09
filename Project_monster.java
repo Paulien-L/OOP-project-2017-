@@ -35,7 +35,7 @@ import java.util.concurrent.ThreadLocalRandom;
  *
  * @author Thomas and Paulien
  *
- * @version version 1
+ * @version version 4
  *
  */
 public class Monster implements ItemHolder {
