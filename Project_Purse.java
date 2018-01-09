@@ -1,22 +1,20 @@
-package Items;
-
-import Monsters.Monster;
-
 public class Purse extends Item {
 
-    public Purse(long ID, double value, int capacity, int dukats)throws IllegalArgumentException{
-        if(!isValidID(ID))
-            throw new IllegalArgumentException();
-        else
-            this.setID(ID);
-        this.setValue(value);
+	public Purse(long ID, float weight, double value, ItemHolder holder, int capacity, int dukats)throws IllegalArgumentException{
+        super(ID, weight, value, holder);
+
         this.setCapacity(capacity);
         this.setDukats(dukats);
-    }
 
-    public boolean isValidID(long PurseId){
-        if (PurseId <1){
-            return false;
+    }
+    @Override
+    public void setID(long PurseId){
+        if (PurseId <0){
+            PurseId = Math.abs(PurseId);
+            setID(PurseId);
+        } else if (PurseId == 0) {
+            PurseId = 1;
+            setID(PurseId);
         } else{
             long a = 1;
             long b = 1;
@@ -27,14 +25,21 @@ public class Purse extends Item {
                 b = c;
             }
             if(c == PurseId)
-                return true;
+                super.setID(PurseId);
             else
-                return false;
+                super.setID(c);
         }
     }
-    public double getPurseTotalValue(){
-        return (this.getValue()+this.dukats);
+
+
+    public double getValue(){
+        return (super.getValue()+this.dukats);
     }
+
+    public double getOwnValue(){
+        return super.getValue();
+    }
+
     private int dukats;
 
     public int getDukats(){
@@ -72,6 +77,7 @@ public class Purse extends Item {
     public int getCapacity(){
         return this.capacity;
     }
+    
     //dukats
     void setCapacity(int capacity){
         if (capacity>0)
@@ -85,10 +91,21 @@ public class Purse extends Item {
         this.setDukats(0);
     }
 
-    public boolean isValidHolder(Monster monster){
-        if (monster.getPurse() == null)
-            return true;
-        else
-            return false;
+    public float getWeight(){
+        return super.getWeight() + (this.getDukats()*50);
     }
+
+    public float purseWeight(){
+        return super.getWeight();
+    }
+
+	@Override
+	public boolean isValidValue(double value) {
+		return (value >= 0);
+	}
+
+	
+	
+	
+
 }
