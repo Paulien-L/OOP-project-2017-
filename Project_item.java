@@ -2,25 +2,33 @@
 public abstract class Item {
 	
 	//CONSTRUCTOR
-	public Item(long ID, float weight, double value, Monster holder) throws IllegalArgumentException {
-		this.ID = ID;
-		
-		if(isValidWeight(weight) == true)
-			this.weight = weight;
-		else
-			throw new IllegalArgumentException();
-		
-		assert(isValidValue(value));
-		this.value = value;
-		
-		if(isValidHolder(holder) == true)
-			this.holder = holder;
-		else
-			throw new IllegalArgumentException();
-	}
+	public Item(long ID, float weight, double value, ItemHolder holder) throws IllegalArgumentException {
+        setID(ID);
+
+        if(isValidWeight(weight))
+            this.weight = weight;
+        else
+            throw new IllegalArgumentException();
+        // assert is cannot be in final code
+       // assert(isValidValue(value));
+        this.value = value;
+        
+        if(holder == null) {
+        	this.holder = holder;
+        }
+        else if(isValidHolder(holder)) {
+            this.holder = holder;
+            holder.equip(this);
+        } else
+            throw new IllegalArgumentException();
+    }
 	
 	//IDENTIFICATION
-	private final long ID;
+	private long ID;
+	
+	public void setID(long ID){
+        this.ID = ID;
+    }
 
 	public long getID() {
 		return this.ID;
@@ -32,16 +40,14 @@ public abstract class Item {
 	public double getValue() {
 		return this.value;
 	}
-
-	public static boolean isValidValue(double value){
-		return (value >= 0);
-	}
 	
-	private void setValue(double value){
+	public abstract boolean isValidValue(double value);
+	
+	public void setValue(double value) throws IllegalArgumentException {
 		if(isValidValue(value))
 			this.value = value;
 	    else
-	    	this.value = 0;
+	    	throw new IllegalArgumentException();
 	}
 	
 	//WEIGHT
@@ -57,20 +63,34 @@ public abstract class Item {
 	}
 	
 	//HOLDER
-	private Monster holder;
-		
-	public Monster getHolder() {
-		return this.holder;
-	}
+	private ItemHolder holder;
 
-	public void setHolder(Monster holder) throws IllegalArgumentException {
-		if(isValidHolder(holder) == true) 
-			this.holder = holder;
-		if(! holder.hasAsEquipment(this))
-			holder.equip(this);
-		else
-			throw new IllegalArgumentException();
-	}
+    public ItemHolder getHolder() {
+        if (holder != null)
+            return this.holder;
+        else {
+            System.out.println("This item has no holder.");
+            return null;
+        }
+    }
+    
+    public static Monster getIndirectHolder(Item item){
+        ItemHolder holder = item.getHolder();
+        if (holder instanceof Backpack){
+            item = (Item) holder;
+            getIndirectHolder(item);
+        }
+        return (Monster) holder;
+    }
+    
+    public void setHolder(ItemHolder holder) throws IllegalArgumentException {
+        if(isValidHolder(holder))
+            this.holder = holder;
+        else if(! holder.hasAsEquipment(this))
+            holder.equip(this);
+        else
+            throw new IllegalArgumentException();
+    }
 
 	public boolean hasHolder(Item item) {
 		return (item.getHolder() != null);
@@ -80,6 +100,13 @@ public abstract class Item {
 		return (this.getHolder() == monster);
 	}
 	
-	public abstract boolean isValidHolder(Monster holder);
+	public boolean isValidHolder(ItemHolder holder){
+        if (holder == null)
+            return true;
+        else if (holder.canObtain(this))
+            return true;
+        else
+            return false;
+    }
 	
 }
