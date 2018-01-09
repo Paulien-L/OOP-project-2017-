@@ -5,18 +5,11 @@ import java.util.Random;
 public class Weapon extends Item {
 
 	//CONSTRUCTOR
-	public Weapon(double value, float weight, int damage, Monster holder) throws IllegalArgumentException {
+	public Weapon(double value, float weight, int damage, ItemHolder holder) throws IllegalArgumentException {
 		super(generateWeaponID(), weight, value, holder);
 
 		assert(isValidDamage(damage));
 		this.damage = damage;
-		
-		if((isValidHolder(holder) == true) && (holder.canObtain(this) == true)) {
-			setHolder(holder);
-			holder.obtainItem(this);
-		} else {
-			throw new IllegalArgumentException();
-		}
 	}
 
 
@@ -43,23 +36,39 @@ public class Weapon extends Item {
 			return weaponID = generateWeaponID();
 		}
 	}
-	
-
-	//WEIGHT (defensive)
-	
-
 
 	//VALUE (nominal)
+	private static double maxValue = 20;
+	
+	@Override
+	public boolean isValidValue(double value) {
+		return ((value >= 0) && (value <= maxValue));
+	}
+	
 	public void increaseWeaponValue() {
 	}
 
 	public void decreaseWeaponValue() {
 	}
+	
+	private boolean isValidMaxValue(int newMaxValue) {
+		return (newMaxValue >= minDamage);
+	}
+	
+	private void setMaxValue(int newMaxValue) {
+		assert(isValidMaxValue(newMaxValue));
+		this.maxValue = newMaxValue;
+	}
+
+	private void generateNewMaxValue() {
+		Random r = new Random();
+		int newMaxValue= r.nextInt((Integer.MAX_VALUE - minDamage) + 1) + minDamage;
+		assert(isValidMaxValue(newMaxValue));
+		this.maxValue = newMaxValue;
+	}
 
 	//DAMAGE (nominal)
-
 	private int damage;
-	private static int maxDamage = 20;
 	private final static int minDamage = 1;
 
 	//@Basic
@@ -68,45 +77,10 @@ public class Weapon extends Item {
 	}
 
 	public boolean isValidDamage(int damage) {
-		if((damage >= minDamage) && (damage <= getMaxDamage()))
-			return true;
-		else
-			return false;
+		return((damage >= minDamage) && (damage <= this.getMaxDamage()));
 	}
 
 	public int getMaxDamage() {
-		return this.maxDamage;
-	}
-
-	private boolean isValidMaxDamage(int newMaxDamage) {
-		if(newMaxDamage >= minDamage)
-			return true;
-		else
-			return false;
-	}
-
-	private void setMaxDamage(int newMaxDamage) {
-		assert(isValidMaxDamage(newMaxDamage));
-		this.maxDamage = newMaxDamage;
-	}
-
-	private void generateNewMaxDamage() {
-		Random r = new Random();
-		int newMaxDamage = r.nextInt((Integer.MAX_VALUE - minDamage) + 1) + minDamage;
-		assert(isValidMaxDamage(newMaxDamage));
-		this.maxDamage = newMaxDamage;
-	}
-
-	//HOLDER (defenisive)
-	@Override
-	public boolean isValidHolder(Monster holder) {
-		if(holder == null)
-			return true;
-		else if((holder.getNbFreeAnchors() > 0) && (hasHolder(this) == false))
-			return true;
-		else if((holder.getNbFreeAnchors() > 0) && (hasHolder(this) == hasAsHolder(holder)))
-			return true;
-		else
-			return false;
+		return (int) this.maxValue;
 	}
 }
