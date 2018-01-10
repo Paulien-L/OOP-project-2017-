@@ -180,9 +180,17 @@ public abstract class Item {
     /**
      * Returns indirect holder of an item.
      * @param item
-     * @return holder
+     * @return 	If the holder of the given item is a Backpack,
+     * 			the given item is set as holder and the method calls itself.
+     * 			| if(holder instanceof Backpack)
+     * 			|	then item = (Item) holder
+     * 			|		 getIndirectHolder(item)
+     * 
+     * @return	If the holder of the given item is a Monster,
+     * 			the Monster object is returned.
+     * 			| return (Monster) Holder
+     * 
      */
-    //NOT TOO SURE HOW THIS WORKS AND THEREFORE NOT TOO SURE ABOUT THE DOCUMENTATION
     public static Monster getIndirectHolder(Item item){
         ItemHolder holder = item.getHolder();
         if (holder instanceof Backpack){
@@ -193,21 +201,24 @@ public abstract class Item {
     }
     
     /**
-     * Sets holder of this item to a new holder
+     * Sets holder of this item to a new holder.
      * 
-     * @param holder
+     * @param 	holder
      * 
-     * @post	
+     * @post	If the given holder is a valid holder for this item,
+     * 			then the holder is set to the given holder.
+     * 			| if(isValidHolder(holder))
+     *      	| 	then new.getHolder() = holder
      * 
-     * @throws IllegalArgumentException
+     * @throws 	IllegalArgumentException
+     * 			The given holder is not a valid holder.
+     * 			isValidHolder(holder) == false
      */
     public void setHolder(ItemHolder holder) throws IllegalArgumentException {
-        if(isValidHolder(holder))
-            this.holder = holder;
-        else if(! holder.hasAsEquipment(this))
-            holder.equip(this);
-        else
-            throw new IllegalArgumentException();
+    	if(isValidHolder(holder))
+    		this.holder = holder;
+    	else
+    		throw new IllegalArgumentException();
     }
     
     /**
