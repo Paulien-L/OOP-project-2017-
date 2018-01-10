@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -35,9 +36,6 @@ public class Backpack extends Item implements ItemHolder {
 	 * @effect	The new backpack is initialised as a new item with given ID, value, weight and holder.
 	 * 			super(ID, weight, value, holder)
 	 * 
-	 * @effect	The ID of the backpack is set to a new ID as in the method setID(long ID)
-	 * 			| setID(ID)
-	 * 
 	 * @throws 	IllegalArgumentException
 	 * 			The given weight is not a valid weight.
 	 * 			| isValidWeight(weight) == false
@@ -54,7 +52,6 @@ public class Backpack extends Item implements ItemHolder {
     public Backpack(long ID, float weight, double value, float capacity, ItemHolder holder) throws IllegalArgumentException {
         super(ID, weight, value, holder);
         
-        this.setID(ID);
         if(isValidCapacity(capacity))
             this.capacity = capacity;
         else
@@ -111,7 +108,7 @@ public class Backpack extends Item implements ItemHolder {
      * Method to equip an item in a backpack.
      * 
      * @post	If the backpack can obtain the given item,
-     * 			then the item is added to the contents of the backpack.
+     * 			then the item is added to the contents of the backpack and the contents of the backpack are sorted according to weight.
      * 			| if(canObtain(item))
      * 			|	then contents.add(item)
      * 
@@ -128,6 +125,7 @@ public class Backpack extends Item implements ItemHolder {
         if(canObtain(item)){
             contents.add(item);
             item.setHolder(this);
+            contents.sort(Comparator.comparing(Item::getWeight));
         } else
             throw new IllegalArgumentException("Cannot add item to backpack.");
     }
@@ -141,8 +139,14 @@ public class Backpack extends Item implements ItemHolder {
      * 			| if (item != null) && (item.getHolder() == null || item.getHolder() == this.getHolder())
      * 			| && (this.getCapacity() - this.getContentWeight() >= item.getWeight())
      */
-    public boolean canObtain(Item item){
-        return ((item != null) && (item.getHolder() == null || item.getHolder() == this.getHolder()) && (this.getCapacity() - this.getContentWeight() >= item.getWeight()));
+    public boolean canObtain(Item item) {
+    	boolean valid = false;
+        if ((item != null) && item.getHolder() == null && (this.getCapacity() - this.getContentWeight() >= item.getWeight())){
+            if (this.getHolder().canObtain(item)) {
+                valid = true;
+            }
+        }
+        return valid;
     }
     
     /**
@@ -203,7 +207,21 @@ public class Backpack extends Item implements ItemHolder {
         }
         return contentWeight;
     }
-
+    
+    /**
+     * Returns item with the lowest weight in this backpack
+     */
+    public Item getLowestWeightItem(){
+        return contents.get(0);
+    }
+    
+    /**
+     * Returns item with the highest weight in this backpack
+     */
+    public Item getHighestWeightItem(){
+        return contents.get(contents.size()-1);
+    }
+    
     //CAPACITY
     /**
      * Variable referencing the capacity of a backpack
