@@ -507,7 +507,7 @@ public class Monster implements ItemHolder {
      *        The monster that gets hit
      *
      */
-    public void hitOtherMonster(Monster DefendingMonster){
+	public void hitOtherMonster(Monster DefendingMonster){
         int randomNum = ThreadLocalRandom.current().nextInt(0, 31);
         int battlevalue;
         if (randomNum < this.getHitpoints()){
@@ -517,7 +517,10 @@ public class Monster implements ItemHolder {
         }
         if (battlevalue > DefendingMonster.getProtection()) {
             try {
-                DefendingMonster.setHitpoints(DefendingMonster.getHitpoints() - (this.getDamage() + (this.getStrength() - 5) / 3));
+                if (this.getEquipment()[1] instanceof Weapon)
+                    DefendingMonster.setHitpoints(DefendingMonster.getHitpoints() - (this.getDamage() + ((Weapon)this.getEquipment()[1]).getDamage() +(this.getStrength() - 5) / 3));
+                else
+                    DefendingMonster.setHitpoints(DefendingMonster.getHitpoints() - (this.getDamage() + (this.getStrength() - 5) / 3));
             } catch (IllegalArgumentException e){
                 DefendingMonster.setHitpoints(0);
             }
