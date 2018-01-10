@@ -27,8 +27,6 @@ public class Purse extends Item {
 	 * 
 	 * @effect	The new purse is initialised as a new item with given ID, value, weight and holder.
 	 * 			super(ID, weight, value, holder)
-	 * @effect	The ID of the purse is set to a new ID as in the method setID(long purseID)
-	 * 			| setID(ID)
 	 * @effect	The capacity of the purse is set as in the method setCapacity(int capacity)
 	 * 			| setCapacity(capacity)
 	 * @effect	The dukats of the purse is set as in the method setDukats(int dukats)
@@ -44,9 +42,6 @@ public class Purse extends Item {
 	 */
 	public Purse(long ID, float weight, double value, ItemHolder holder, int capacity, int dukats)throws IllegalArgumentException{
         super(ID, weight, value, holder);
-        
-        //Added this since, shouldn't it be actually set to a certain ID?
-        this.setID(ID);
         
         this.setCapacity(capacity);
         this.setDukats(dukats);
