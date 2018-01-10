@@ -32,6 +32,15 @@ import java.util.concurrent.ThreadLocalRandom;
  *
  * @invar	The average strength of two of monsters must be 10.
  * 			| isValidAverageStrength(getAverageStrength())
+ * 
+ * @invar	The number of anchors a monster has must be a valid number of anchors.
+ * 			| isValidNbOfAnchors(getNbAnchors())
+ * 
+ * @invar	A monster can only equip an item if that item has no current holder, if the monster has a free anchor and if the monster has enough carrying capacity.
+ * 			| canEquip(Item item)
+ * 
+ * @invar	A monster can only obtain an item if that item is not null and the monster has enough carrying capacity.
+ * 			| canObtain(Item item)
  *
  * @author Thomas and Paulien
  *
@@ -41,7 +50,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Monster implements ItemHolder {
 
     /**
-     * Create a new monster with given name, protection factor, maximum hitpoints and strength.
+     * Create a new monster with given name, protection factor, maximum hitpoints, strength, number of anchors, weapon, purse and backpack.
      *
      * @param 	name
      * 			The name of the monster.
@@ -55,6 +64,12 @@ public class Monster implements ItemHolder {
      * 			The strength of the monster.
      * @param   nbOfAnchors
      *          The number of anchors of the monster
+     * @param 	weapon
+     * 			The weapon of a monster.
+     * @param	purse
+     * 			The purse of a monster.
+     * @param	backpack
+     * 			The backpack of a monster.
      *
      * @pre		The given protection factor for the monster must be a valid protection factor.
      * 			| isValidProtection(protection)
@@ -92,7 +107,8 @@ public class Monster implements ItemHolder {
         
         this.setDamage(damage);
 
-        assert isValidProtection(protection);
+        assert isValidProtection(protection): "Protection must be higher than or equal to the minimum protection, lower than or equal to the maximum protection "
+        									+ "and a prime number";
         this.protection = protection;
 
         if(isValidMaxHitpoints(maxHitpoints))
@@ -121,11 +137,12 @@ public class Monster implements ItemHolder {
      * Variable referencing the name of a monster
      */
     private final String name;
+    
     /**
      * Returns the name of a monster.
      * @return name
      */
- // 	@Basic @Immutable
+ // @Basic @Immutable
     public String getName() {
         return this.name;
     }
@@ -160,7 +177,7 @@ public class Monster implements ItemHolder {
      * Returns the damage of this monster.
      * @return this.damage
      */
- //   @Basic
+ // @Basic
     public int getDamage() {
         return this.damage;
     }
@@ -168,7 +185,8 @@ public class Monster implements ItemHolder {
     /**
      * Sets damage of this monster to the given damage.
      *
-     * @param damage
+     * @param 	damage
+     * 			The damage of a monster.
      *
      * @post 	The damage of this monster will be equal to the given damage
      * 			if the given damage is in the range of the minimum damage and maximum damage.
@@ -181,7 +199,7 @@ public class Monster implements ItemHolder {
      * 			|	then new.getDamage() = MAX_DAMAGE
      *
      * @post 	If the given damage is lower than the minimum damage,
-     * 			the damage is set to the minimum damage
+     * 			the damage is set to the minimum damage.
      * 			| if (damage < MIN_DAMAGE)
      * 			| then new.getDamage() = MIN_DAMAGE
      */
@@ -199,7 +217,7 @@ public class Monster implements ItemHolder {
      * Returns the maximum damage of a monster.
      * @return MAX_DAMAGE
      */
-//  	@Basic @Immutable
+//  @Basic @Immutable
     public int getMaxDamage() {
         return this.MAX_DAMAGE;
     }
@@ -217,14 +235,21 @@ public class Monster implements ItemHolder {
     /**
      * Sets the maximum damage of a monster to the given maximum damage
      *
-     * @param MAX_DAMAGE
+     * @param newMAX_DAMAGE
      *
-     * @post 	The maximum damage of this monster will be equal to the given maximum damage
-     * 			|	new.getMaxDamage() = MAX_DAMAGE
+     * @post 	The maximum damage of this monster will be equal to the given maximum damage 
+     * 			if the given maximum damage is a valid maximum damage.
+     * 			| if(isValidMaxDamage(newMAX_DAMAGE)) 
+     * 			| 	then new.getMaxDamage() = MAX_DAMAGE
+     * 
+     * @post	If the given maximum damage is not a valid maximum damage, the maximum damage will not be changed.
+     * 			| if(isValidMaxDamage(newMAX_DAMAGE) == false)
+     * 			| 	then MAX_DAMAGE = MAX_DAMAGE
+     * 
      * @note	Can be set to private when not used/testing is done
      */
     public void setMaxDamage(int newMAX_DAMAGE) {
-        if(newMAX_DAMAGE >= 1)
+        if(isValidMaxDamage(newMAX_DAMAGE))
         	MAX_DAMAGE = newMAX_DAMAGE;
     }
 
@@ -246,7 +271,7 @@ public class Monster implements ItemHolder {
      * Returns the protection factor of a monster.
      * 	The protection factor of a monster denotes how well it can protect itself in combat.
      */
-//  	@Basic @Immutable
+//  @Basic @Immutable
     public int getProtection() {
         return this.protection;
     }
@@ -279,7 +304,7 @@ public class Monster implements ItemHolder {
      * Returns the maximum protection factor of a monster.
      *
      */
-//  	@Basic
+//  @Basic
     public int getMaxProtection() {
         return this.maxProtection;
     }
@@ -336,7 +361,7 @@ public class Monster implements ItemHolder {
      * Returns current hitpoints of a monster.
      * @return hitpoints
      */
-//  	@Basic
+//  @Basic
     public int getHitpoints() {
         return this.hitpoints;
     }
@@ -380,7 +405,7 @@ public class Monster implements ItemHolder {
      * Returns the value for the maximum hitpoints of the monster.
      * @return maxHitpoints
      */
-//    @Basic @Immutable
+//  @Basic @Immutable
     public int getMaxHitpoints() {
         return this.maxHitpoints;
     }
@@ -399,7 +424,10 @@ public class Monster implements ItemHolder {
      * Sets the maximum hitpoints of a monster to a new value.
      *
      * @param newMaxHitpoints
-     *
+     *	
+     * @post	The maximum hitpoints of a monster will be equal to the given maximum hitpoints.
+     * 			| new.getMaxHitpoints() = maxHitpoints
+     * 
      * @throws IllegalArgumentException
      * 			The new value for the maximum hitpoints is not a valid value.
      * 			| isValidMaxHitpoints(newMaxHitpoints) == false
@@ -437,7 +465,7 @@ public class Monster implements ItemHolder {
      * Returns strength of a monster.
      * @return strength
      */
-//  @Basic @Immutable
+//  @Basic
     public int getStrength(){
         return strength;
     }
@@ -511,19 +539,30 @@ public class Monster implements ItemHolder {
 	private Item[] equipment;
 	
 	/**
+	 * Returns equipment of a monster.
+	 * @return equipment
+	 */
+	public Item[] getEquipment() {
+		return this.equipment;
+	}
+	
+	
+	
+	/**
 	 * Method to set the size of the equipment for a monster based on its number of anchors.
 	 * @post 	The equipment size of a monster will be equal to the number of anchors of a monster.
-	 * 			| this.equipment = new Item[this.nbAnchors]
+	 * 			| new.getEquipment().length() = equipment.length()
 	 */
+	//NOT TOO SURE ABOUT THIS DOCUMENTATION
     public void setEquipmentSize(){
         this.equipment = new Item[this.nbAnchors];
     }
 	
 	/**
 	 * Method that returns the number of anchors a monster possesses.
-	 * @return Number of anchors of a monster
-	 * 			|nbOfAnchors
-	 */	
+	 * @return nbAnchors
+	 */
+//  @Basic @Immutable  
     public int getNbAnchors() {
         return this.nbAnchors;
     }
@@ -544,7 +583,7 @@ public class Monster implements ItemHolder {
     
     /**
      * Calculates the number of anchors of a monster that are not occupied by equipment.
-     * @return Number of free anchors
+     * @return 	Number of free anchors
      * 			| this.getNbAnchors() - this.getNbEquippedItems()
      */
     public int getNbFreeAnchors() {
@@ -565,7 +604,7 @@ public class Monster implements ItemHolder {
     //EQUIPMENT
     /**
      * Checks if a monster has a certain item in their equipment.
-     * @return True if the equipment of a monster contains the given item.
+     * @return 	True if the equipment of a monster contains the given item.
      * 			| this.equipment.contains(item)
      */
     public boolean hasAsEquipment(Item item) {
@@ -574,12 +613,12 @@ public class Monster implements ItemHolder {
     
     /**
      * Checks if the monster can equip an item
-     * @param item
-     * @return True if the item does not have a current holder and if the monster has at least one free anchor.
+     * @param 	item
+     * @return 	True if the item does not have a current holder and if the monster has at least one free anchor.
      * 			| (item.getHolder() == null) && (this.getNbFreeAnchors() > 0)
      */
     public boolean canEquip(Item item) {
-        return ((item.getHolder() == null) && (this.getNbFreeAnchors() > 0));
+        return ((item.getHolder() == null) && (this.getNbFreeAnchors() > 0)) && (((this.getCarryingCapacity() - this.getEquipmentLoad()) >= item.getWeight()));
     }
 
     //no method to equip in a specific spot
@@ -591,12 +630,16 @@ public class Monster implements ItemHolder {
      * 			| 	then equippedItem = item
      *          |    	 item.setHolder(this)
      *
+     * @effect	The equipment load of the monster will be calculated as in the method calculateEquipmentLoad()
+     * 			| calculateEquipmentLoad()
+     *
      * @throws IllegalArgumentException
      * 			The given item cannot be equipped.
      * 			| canEquip(item) == false
      */
     public void equip(Item item) throws IllegalArgumentException {
-        if(canEquip(item) == true) {
+        this.calculateEquipmentLoad();
+    	if(canEquip(item) == true) {
             for (Item equippedItem : equipment){
                 if (equippedItem == null) {
                     equippedItem = item;
@@ -619,13 +662,17 @@ public class Monster implements ItemHolder {
      * 			| if(canEquip(item))
      * 			|	then equipment[anchorNb] = item
      *         			 item.setHolder(this)
+     *         
+     * @effect	The equipment load of the monster will be calculated as in the method calculateEquipmentLoad()
+     * 			| calculateEquipmentLoad()
      * 
      * @throws IllegalArgumentException
      * 			The given item cannot be equipped.
      * 			| canEquip(item) == false
      */
     public void equipInAnchor(Item item, int anchorNb) throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
-        if((anchorNb > this.nbAnchors) || (anchorNb < 0)) {
+    	this.calculateEquipmentLoad();
+    	if((anchorNb > this.nbAnchors) || (anchorNb < 0)) {
         	throw new ArrayIndexOutOfBoundsException();
         }
         else if(canEquip(item)) {
@@ -638,7 +685,7 @@ public class Monster implements ItemHolder {
     }
     
     /**
-     * Method to unequip an item
+     * Method to unequip an item.
      * @param item
      * 
      * @post	If the equipment of a Monster contains the given item, then the item is removed from the equipment 
@@ -647,9 +694,13 @@ public class Monster implements ItemHolder {
      * 			|	then equipment[i] = null
      *      	|		 item.setHolder(null)
      *      
+     * @effect	The equipment load of the monster will be calculated as in the method calculateEquipmentLoad()
+     * 			| calculateEquipmentLoad()
+     * 
      * @throws IllegalArgumentException
      * 			The given item is not equipped by the monster.
      * 			this.equipment.contains(item) == false
+     * 
      * @throws NullPointerException
      * 			The given item is null
      * 			item == null
@@ -661,6 +712,7 @@ public class Monster implements ItemHolder {
         	int i = Arrays.asList(this.equipment).indexOf(item);
             equipment[i] = null;
             item.setHolder(null);
+            this.calculateEquipmentLoad();
         } else
             throw new IllegalArgumentException();
     }
@@ -672,11 +724,23 @@ public class Monster implements ItemHolder {
      * 
      * @effect	The item to unequip is unequipped as in the method unequip.
      * 			| unequip(itemToUnequip)
+     * 
      * @effect	The item to equip is equipped as in the method equipInAnchor.
      * 			| equipInAnchor(itemToEquip, i)
      * 
+     * @throws	IllegalArgumentException
+     *			The given item is not equipped by the monster.
+     * 			this.equipment.contains(item) == false
+     * 
+     * @throws IllegalArgumentException
+     * 			The given item cannot be equipped.
+     * 			| canEquip(item) == false
+     * 
+     * @throws 	NullPointerException
+     * 			The given item is null
+     * 			item == null
      */
-    public void swapItem(Item itemToUnequip, Item itemToEquip) {
+    public void swapItem(Item itemToUnequip, Item itemToEquip) throws IllegalArgumentException, NullPointerException {
     	int i = Arrays.asList(this.equipment).indexOf(itemToUnequip);
         unequip(itemToUnequip);
         equipInAnchor(itemToEquip, i);
@@ -717,6 +781,10 @@ public class Monster implements ItemHolder {
 	 */
 	private double equipmentValue;
 	
+	/**
+	 * Returns value of a monster's equipment
+	 * @return equipmentValue
+	 */
 	public double getEquipmentValue() {
 		return this.equipmentValue;
 	}
@@ -763,18 +831,23 @@ public class Monster implements ItemHolder {
      * 			|		then bp.equip(item)
      * 			|		item.setHolder(this)
      * 
-     * @effect Adding the backpack uses the method equip
+     * @effect Adding the backpack uses the method equip in Backpack
      * 			| bp.equip(item)
+     * 
+     * @effect	The equipment load of the monster will be calculated as in the method calculateEquipmentLoad()
+     * 			| calculateEquipmentLoad()
      * 
      * @throws IllegalArgumentException
      * 			The item cannot be obtained by the monster
      * 			| canObtain(item) == false
+     * 
      * @throws IllegalArgumentException
      * 			The item weighs more than the capacity of the backpack minus the weight of all current items in the backpack
      * 			| bp.getCapacity() - bp.getContentWeight()) >= item.getWeight()
      */
     public void obtainItem(Item item) throws IllegalArgumentException {
-        if(canObtain(item)) {
+    	this.calculateEquipmentLoad();
+    	if(canObtain(item)) {
             for(Backpack bp : this.getEquippedBackpacks()){
                 if ((bp.getCapacity() - bp.getContentWeight()) >= item.getWeight()){
                     bp.equip(item);
@@ -783,6 +856,7 @@ public class Monster implements ItemHolder {
                 	throw new IllegalArgumentException();
             }
             item.setHolder(this);
+            this.calculateEquipmentLoad();
         } else
             throw new IllegalArgumentException();
     }
@@ -800,6 +874,7 @@ public class Monster implements ItemHolder {
      * @throws 	IllegalArgumentException
      * 			The weapon is not in the equipment of the monster.
      * 			this.equipment.contains(weapon) == false
+     * 
      * @throws 	NullPointerException
      * 			The given weapon is null
      * 			weapon == null
@@ -812,6 +887,7 @@ public class Monster implements ItemHolder {
             weapon.setHolder(null);
             int i = Arrays.asList(this.equipment).indexOf(weapon);
             equipment[i] = null;
+            this.calculateEquipmentLoad();
         } else {
             throw new IllegalArgumentException();
         }
