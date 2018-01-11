@@ -119,6 +119,8 @@ public class Backpack extends Item implements ItemHolder {
      * 			then the holder of the item is set to this backpack using the method setHolder()
      * 			| if(canObtain(item))
      * 			|	then item.setHolder(this)
+     * @effect  The Items in the backpack will get sorted by weight after addition of the new item.
+     *          |contents.sort(Comparator.comparing(Item::getWeight))
      *
      * @throws	IllegalArgumentException
      * 			The item cannot be obtained by the backpack.
@@ -133,6 +135,12 @@ public class Backpack extends Item implements ItemHolder {
             throw new IllegalArgumentException("Cannot add item to backpack.");
     }
 
+    /**
+     * A method to equip many items at once.
+     * @post    Each item will get added to the backpack, if the preconditions of the equip method are fulfilled
+     *          |for (item in items)
+     *              equip(item)
+     */
     public void equipMany(Item... items){
         for (Item item : items)
             equip(item);
@@ -168,12 +176,12 @@ public class Backpack extends Item implements ItemHolder {
      */
     public boolean canObtain(Item item){
         boolean valid = false;
-        if ((item != null) && (item.getHolder() == null) && (this.getCapacity() - this.getContentWeight()) >= item.getWeight()){
+        if ((item != null) && item.getHolder() == null && (this.getCapacity() - this.getContentWeight()) >= item.getWeight()){
             if (this.getHolder() instanceof Backpack){
                 if (this.getHolder().canObtain(item))
                     valid = true;
             } else if (this.getHolder() instanceof Monster){
-                if (((Monster) this.getHolder()).canEquip(item))
+                if (((Monster)this.getHolder()).canEquip(item))
                     valid = true;
             } else {
                 valid = true;
@@ -181,7 +189,7 @@ public class Backpack extends Item implements ItemHolder {
         }
         return valid;
     }
-    
+
     /**
      * Checks if the given item is in the backpack.
      * @return	True if the contents of the backpack contain the given item.
@@ -219,11 +227,11 @@ public class Backpack extends Item implements ItemHolder {
     }
 
     /**
-     * Returns contents of the backpack.
+     * Returns contents of this backpack.
      * @return contents
      */
     public List<Item> getContents() {
-        return contents;
+        return this.contents;
     }
 
     //WEIGHT
@@ -235,8 +243,13 @@ public class Backpack extends Item implements ItemHolder {
      */
     public float getContentWeight() {
         float contentWeight = 0;
-        for(Item content: contents) {
+        if(this.contents == null) {
+        	contentWeight = 0;
+        }
+        else if(this.contents != null) {
+        	for(Item content: contents) {
             contentWeight += content.getWeight();
+        	}
         }
         return contentWeight;
     }
@@ -257,11 +270,22 @@ public class Backpack extends Item implements ItemHolder {
         return super.getWeight();
     }
 
+    /**
+     * A method to get the lowest weight item in the backpack.
+     * @return the first item of the backpack, which is sorted on weight, so the lowest weight item.
+     *         |contents.get(0)
+     */
     public Item getLowestWeightItem(){
-        return contents.get(0);
+        return this.contents.get(0);
     }
+
+    /**
+     * A method to get the highest weight item in the backpack.
+     * @return the last item of the backpack, which is sorted on weight, so the highest weight item.
+     *         |contents.get(contents.size-1)
+     */
     public Item getHighestWeightItem(){
-        return contents.get(contents.size()-1);
+        return this.contents.get(this.contents.size()-1);
     }
 
     //CAPACITY
