@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.Before;
 import org.junit.Test;
 
-public class Testing {
+public class MonsterTest {
 	
 	private Monster monsterLegal;
 	private Weapon weaponLegal;
@@ -14,10 +14,10 @@ public class Testing {
 	@Before
 	public void setUp() throws Exception {
 		weaponLegal = new Weapon(10, 5, 5, null);
-		purseLegal = new Purse(111, 5, 10, null, 10, 0);
+		purseLegal = new Purse(111, 0, 10, null, 10, 0);
 		backpackLegal = new Backpack(110, 5, 5, 5, null);
 		
-		monsterLegal = new Monster("Grog", 5, 5, 10, 100, 4, weaponLegal, purseLegal, backpackLegal);
+		monsterLegal = new Monster("Grog", 5, 5, 10, 100, 4, weaponLegal, backpackLegal, purseLegal);
 	}
 	
 	//CONSTRUCTOR
@@ -30,21 +30,20 @@ public class Testing {
         assertEquals(100, monsterLegal.getStrength());
         assertEquals(4, monsterLegal.getNbAnchors());
         assertTrue(monsterLegal.hasAsEquipment(weaponLegal));
-        assertTrue(monsterLegal.hasAsEquipment(purseLegal));
         assertTrue(monsterLegal.hasAsEquipment(backpackLegal));
     }
     
     @Test
     public final void constructor_Throws() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Monster myMonster = new Monster("azrael", 10, 11, 10, 20 ,3, weaponLegal, purseLegal, backpackLegal);
+            Monster myMonster = new Monster("azrael", 10, 11, 10, 20 ,3, weaponLegal,  backpackLegal);
         });
         assertThrows(IllegalArgumentException.class, () -> {
-            Monster yourMonster = new Monster("Azrael", 10, 11, -44, 20, 3, weaponLegal, purseLegal, backpackLegal);
+            Monster yourMonster = new Monster("Azrael", 10, 11, -44, 20, 3, weaponLegal, backpackLegal);
         });
         
         assertThrows(IllegalArgumentException.class, () -> {
-            Monster hisMonster = new Monster("Azrael", 10, 11, 10, 20, -3, weaponLegal, purseLegal, backpackLegal);
+            Monster hisMonster = new Monster("Azrael", 10, 11, 10, 20, -3, weaponLegal, backpackLegal);
         });
     }
     
@@ -197,7 +196,7 @@ public class Testing {
     @Test
     public final void getWeight_SingleCase() {
     	assertEquals(5, weaponLegal.getWeight(), 0.25);
-    	assertEquals(5, purseLegal.getWeight(), 0.25);
+    	assertEquals(0, purseLegal.getWeight(), 0.25);
     	assertEquals(5, backpackLegal.getWeight(), 0.25);
     }
     
@@ -252,7 +251,7 @@ public class Testing {
     @Test
     public final void calculateEquipmentLoad_SingleCase() {
     	monsterLegal.calculateEquipmentLoad();
-    	assertEquals(15, monsterLegal.getEquipmentLoad(), 0.25);
+    	assertEquals(10, monsterLegal.getEquipmentLoad(), 0.25);
     }
     
     @Test
@@ -262,17 +261,17 @@ public class Testing {
     }
     
     @Test
-    public final void obtainItem_LegalCase() {
+    public final void storeInBackpack_LegalCase() {
     	Weapon caladbolg = new Weapon(5,1,5, null);
-    	monsterLegal.obtainItem(caladbolg);
-    	assertTrue(backpackLegal.hasAsEquipment(caladbolg));
+    	monsterLegal.storeInBackpack(caladbolg);
+    	assertEquals(caladbolg, backpackLegal.getHighestWeightItem());
     }
     
     @Test
-    public final void obtainItem_IllegalCase() {
-    	Weapon caladbolg = new Weapon(5,10000,5, null);
-    	assertThrows(IllegalArgumentException.class, () -> monsterLegal.obtainItem(null)); //Null
-    	assertThrows(IllegalArgumentException.class, () -> monsterLegal.obtainItem(caladbolg)); //Too heavy
+    public final void storeInBackpack_IllegalCase() {
+    	Weapon caladbolg = new Weapon(5,10000000,5, null);
+    	assertThrows(NullPointerException.class, () -> monsterLegal.storeInBackpack(null)); //Null
+    	assertThrows(IllegalArgumentException.class, () -> monsterLegal.storeInBackpack(caladbolg)); //Too heavy
     }
     
     @Test
@@ -287,7 +286,7 @@ public class Testing {
     public final void destroyWeapon_IllegalCase() {
     	Weapon caladbolg = new Weapon(5,1,5, null);
     	assertThrows(IllegalArgumentException.class, () -> monsterLegal.destroyWeapon(caladbolg)); //Not in equipment
-    	assertThrows(NullPointerException.class, () -> monsterLegal.destroyWeapon(null));
+    	assertThrows(NullPointerException.class, () -> monsterLegal.destroyWeapon(null)); //Null
     }
     
 
